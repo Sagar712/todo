@@ -1,0 +1,15 @@
+{
+  "short_name": "ToDo",
+  "name": "App which organizes Tasks",
+  "start_url": ".",
+  "background_color": "#1E1E1E",
+  "theme_color": "#1E1E1E",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "./favicon6.png",
+      "sizes": "251x251",
+      "type": "image/png"
+    }
+  ]
+}
