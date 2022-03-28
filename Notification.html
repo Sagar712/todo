@@ -1,16 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Set notification</title>
 </head>
+
 <body>
+    <br>
+    <br>
+    Set time:
     <input type="time" id="timeOfNotf" onchange="timesetter()">
+    <br>
+    <br>
+    <br>
+    <button onclick="showAll()">Show Notifications</button>
+    <br>
+    <br>
+    <br>
+    <button onclick="deleteNotif()">Cancel Notifications</button>
 
     <script>
-        
+        const localName = 'Adv-Todo-App-Data'
+        let obj = JSON.parse(localStorage.getItem(localName))
+        console.log(obj);
+
+        function timesetter() {
+            const timerec = document.querySelector('#timeOfNotf').value;
+            hours = timerec.split(":")[0];
+            mins = timerec.split(":")[1];
+            console.log(hours + " -> " + mins);
+            fireIt();
+        }
+
+        function getDate(num = 0) {
+            let date = new Date(new Date().getTime() + num * 24 * 60 * 60 * 1000)
+                .toJSON().toString().replace('-', '').replace('-', '').slice(0, 8)
+            return date
+        }
+        function fireIt() {
+            let thisTime = new Date();
+            if (hours != undefined && mins != undefined) {
+                let dateChanger = thisTime.getDate();
+                let i = 1;
+                let CompleteStr = "";
+                while (obj.tasks[i] != null) {
+                    i++;
+                }
+                i--;
+                for (let j = i; j > 0; j--) {
+                    CompleteStr = CompleteStr.concat(obj.tasks[j].title + "\n");
+                }
+                for (let i = 0; i < 7; i++) {
+                    let temp = new Date(thisTime.getFullYear(), thisTime.getMonth(), dateChanger++, hours, mins, 0);
+                    console.log(temp);
+                    setNotification(temp, CompleteStr);
+                }
+
+            }
+            else
+                alert("Set time and then try");
+        }
+
+        function setNotification(time, bodyIs) {
+            console.log(bodyIs);
+            Notification.requestPermission().then(function (result) {
+                if (result === 'granted') {
+                    navigator.serviceWorker.ready.then(function (registration) {
+                        registration.showNotification('Pending tasks (ToDo):',
+                            {
+                                title: "",
+                                tag: Math.random().toString().substr(2),
+                                body: bodyIs,
+                                showTrigger: new TimestampTrigger(time.getTime())
+                            });
+                    });
+                }
+            });
+        }
+
+        async function showAll() {
+            window.notifications = null;
+            const registration = await navigator.serviceWorker.getRegistration();
+            window.notifications = await registration.getNotifications({
+                includeTriggered: true,
+            });
+            let Str = "";
+            if (Array.isArray(window.notifications)) {
+                window.notifications.forEach((notification, i) => {
+                    Str = Str.concat(`notification title--> ${notification.title} \n notification time --> ${(new Date(notification.showTrigger.timestamp)).toLocaleTimeString()}\n`);
+                });
+            }
+            alert(Str);
+        }
+
+        async function deleteNotif() {
+            window.notifications = null;
+            try {
+                const registration = await navigator.serviceWorker.getRegistration();
+                window.notifications = await registration.getNotifications({
+                    includeTriggered: true,
+                });
+                if (Array.isArray(window.notifications)) {
+                    window.notifications.forEach((notification, i) => {
+                        notifications[i].close();
+                    });
+                }
+                alert("Notifications cancelled!");
+            } catch (error) {
+                alert("Notification aren't set yet!");
+            }
+
+        }
+
+        if ('showTrigger' in Notification.prototype) {
+            console.log('Notification Triggers supported ');
+        }
+        else {
+            console.log("Not supported");
+        }  
     </script>
 </body>
+
 </html>
